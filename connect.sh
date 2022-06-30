@@ -15,17 +15,17 @@ It also need to return a error message is the program occure some.
 
 It also need to keep track of where in the ctf I am and what where the previous ctf password/key.
 
+all test were made by hand and note by unit test ...
+
  [+] create usage function
-	[ ] test usage function
+	[+] test usage function
  [+] create connection / arguement level number 
-	[ ] test connection function
+	[+] test connection function
  [+] create password rememberer
-	[ ] test password rememberer / arguement level number
+	[+] test password rememberer / arguement level number
  [+] add password 
-	[ ] test password rememberer / argumement level number
- [+] check progression
-	[ ] 
- [ ] create error message
+	[+] test password rememberer / argumement level number
+ [+] create error message
  [ ] post on github ???
 
 todo
@@ -35,68 +35,92 @@ usage()
 {
 echo """
 [+] name: connect_ioWargame
-[+] traditional usage: ./connect_ioWargame {l|k|a|p} [argument]
+[+] traditional usage: ./connect_ioWargame -{l|k|a|h} [argument]
 [+] usage:
 	-l : connect to a ioWargame level 
-	-k : give the flag of a ioWargame level 
+	-f : give the flag of a ioWargame level 
 	-a : add  the flag of a ioWargame level in database
-	-p : check progression in the ioWargame
+	-h : show usage/function page
 """
 
 }
 
+fatal()
+{
+	echo "[ ERROR ] an fatal error occur"
+}
+
 connect()
 {
-echo ""[+] connecting into  $1@io.netgarage.org ...""
-ssh -p2224 $1@io.netgarage.org
+echo ""[+] connecting into  $2@io.netgarage.org ...""
+ssh "$2"@io.netgarage.org
 
 }
 
-get_password()
+get_flag()
 {
-echo ""[+] searching key for $1@io.netgarage.org ...""
-echo ""[++] $( cat .pass | grep $1: ) ""
+echo ""[+] searching key for $2@io.netgarage.org ...""
+echo ""[++] $( cat .pass | grep $2: ) ""
 }
 
 add_password()
 {
-echo "[+] adding key for $1@io.netgarage.org ..."
+echo "[+] adding key for $2@io.netgarage.org ..."
 
-if [[ $( cat .pass | grep $1: ) != ""  ]]
+if [[ $( cat .pass | grep $2: ) != ""  ]]
 then
 	echo "[++] a password already exist for this level it is ..."
-	echo "[++] $( cat .pass | grep $1: ) "
+	echo "[++] $( cat .pass | grep $2: ) "
 
 else
-	echo "$1: $2" >> .pass
+	echo "$2: $3" >> .pass
 	echo "[++] the command was sucessfull check it for yourself ..."
-	echo "[++] $( cat .pass | grep $1: )"
+	echo "[++] $( cat .pass | grep $2: )"
 
 fi
 }
 
-parse_com()
+main()
 {
+# example usage: ./scrypt -l level1
 echo "this is the arguments passed -> $@|"
-
-if [ $2="-h" ]
- then 
-  echo "this is usage" 
-
-elif [[ $2="-l" ]]
+if [[ "$1" == "-h" ]]
 then
-	echo "this is connect"
- if [ "$3" == "^[0-9]+$"]  $$ [ 1 <= "$3" <= 10 ]
- then
-		echo "this should connect to $3"
- fi
+	usage
+
+elif [[ "$1" == "-l" ]]
+then
+	if [[ "$2" != "" ]]
+	then
+		connect $@
+	else
+		echo "[ ERROR ] You need to give a level"
+	fi
+
+elif [[ "$1" == "-f" ]]
+then 
+	if [[ "$2" != "" ]]
+	then
+		get_flag $@
+	else
+		echo "[ ERROR ] You need to give a level"
+	fi
+
+elif [[ "$1" == "-a" ]]
+then
+	if [[ "$3" != "" ]]
+		add_password $@
+	else
+		echo "[ ERROR ] You need to give the level and the flag"
+	fi
 
 else
-	echo "there a problem"
+	fatal
+
 fi
 
 }
 
 # this how you pass argument to a function in bash
 # remember $@ -> all the argv $#  
-parse_com $@
+main $@
